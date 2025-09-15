@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: devpre_postgres
+    environment:
+      POSTGRES_DB: devpre_db
+      POSTGRES_USER: devprep_postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - devprep_network
+
+volumes:
+  postgres_data:
+
+networks:
+  devprep_network:
+    driver: bridge
