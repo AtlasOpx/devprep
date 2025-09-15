@@ -1,0 +1,100 @@
+############################
+# Go
+############################
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build output
+*.test
+*.out
+
+# Go build artifacts
+*.a
+*.o
+*.lo
+*.la
+*.al
+*.gch
+*.pb.go
+
+# Build dirs
+bin/
+build/
+dist/
+coverage/
+
+# Go modules / vendor (если не используешь — игнорь)
+vendor/
+pkg/
+
+############################
+# OS Specific
+############################
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+############################
+# Logs / temp
+############################
+*.log
+*.pid
+*.seed
+*.swp
+*.swo
+*~
+tmp/
+.cache/
+
+############################
+# Env / secrets
+############################
+.env
+.env.*
+*.key
+*.crt
+*.pem
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+.docker/
+.dockerignore
+**/docker-compose.override.yml
+
+############################
+# VSCode
+############################
+.vscode/
+.history/
+*.code-workspace
+
+############################
+# JetBrains (IntelliJ / GoLand)
+############################
+.idea/
+*.iml
+out/
+cmake-build-*/
+*.ipr
+*.iws
+
+# SonarLint plugin
+.sonar/
+
+# Crashlytics
+crashlytics-build.properties
+
+############################
+# Other editors
+############################
+*.sublime-workspace
+*.sublime-project
+*.kate-swp
+
