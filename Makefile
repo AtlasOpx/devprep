@@ -10,7 +10,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=devprep
 MAIN_PATH=./cmd/devprep/main.go
 
-DB_URL=postgres://postgres:password@localhost:5432/auth_db?sslmode=disable
+DB_URL=postgres://devprep_postgres:password@localhost:5432/devprep_db?sslmode=disable
 
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -v $(MAIN_PATH)
