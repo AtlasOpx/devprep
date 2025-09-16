@@ -16,19 +16,15 @@ type Config struct {
 	ServerHost string
 	ServerPort string
 
-	JWTSecret     string
-	SessionSecret string
-	SessionMaxAge string
-
 	RedisHost     string
 	RedisPort     string
 	RedisPassword string
 }
 
-func Load() *Config {
-	err := godotenv.Load()
+func Load() (*Config, error) {
+	err := godotenv.Load(".env")
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	return &Config{
@@ -42,14 +38,10 @@ func Load() *Config {
 		ServerHost: getEnv("SERVER_HOST", "localhost"),
 		ServerPort: getEnv("SERVER_PORT", "3000"),
 
-		JWTSecret:     getEnv("JWT_SECRET", "your-secret-key"),
-		SessionSecret: getEnv("SESSION_SECRET", "your-session-secret"),
-		SessionMaxAge: getEnv("SESSION_MAX_AGE", "3600"),
-
 		RedisHost:     getEnv("REDIS_HOST", "localhost"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
-	}
+	}, nil
 }
 
 func getEnv(key, defaultValue string) string {

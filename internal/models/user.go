@@ -44,3 +44,8 @@ type UpdateProfileRequest struct {
 	LastName  string `json:"last_name,omitempty"`
 	Username  string `json:"username,omitempty"`
 }
+
+type LoginResponse struct {
+	Message string `json:"message"`
+	User    User   `json:"user"`
+}

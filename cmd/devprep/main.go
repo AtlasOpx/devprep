@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/AtlasOpx/devprep/internal/config"
 	"github.com/AtlasOpx/devprep/internal/database"
@@ -37,11 +36,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	db, err := database.Connect(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(db *sql.DB) {
+	defer func(db *database.DB) {
 		err := db.Close()
 		if err != nil {
 			log.Fatal(err)
@@ -105,6 +105,7 @@ func main() {
 	})
 
 	routes.SetupRoutes(app, db, cfg)
+
 	go func() {
 		log.Println("Server starting on :3000")
 		if err := app.Listen(fmt.Sprintf(":%v", cfg.ServerPort)); err != nil {
