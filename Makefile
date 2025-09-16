@@ -1,4 +1,4 @@
-.PHONY: build run dev test clean migrate-up migrate-down migrate-create docker-up docker-down
+.PHONY: build run dev test clean migrate-up migrate-down migrate-create migrate-force migrate-version migrate-install docker-up docker-down
 
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -8,18 +8,25 @@ GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
 
 BINARY_NAME=devprep
-
-build:
-	$(GOBUILD) -o $(BINARY_NAME) -v ./main.go
-
-run:
-	$(GOBUILD) -o $(BINARY_NAME) -v ./main.go
-	./$(BINARY_NAME)
+MAIN_PATH=./cmd/devprep/main.go
 
 DB_URL=postgres://postgres:password@localhost:5432/auth_db?sslmode=disable
 
+build:
+	$(GOBUILD) -o $(BINARY_NAME) -v $(MAIN_PATH)
+
+run: build
+	./$(BINARY_NAME)
+
+test:
+	$(GOTEST) ./...
+
+clean:
+	$(GOCLEAN)
+	rm -f $(BINARY_NAME)
+
 migrate-install:
-	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	$(GOCMD) install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 migrate-create:
 	@read -p "Enter migration name: " name; \
