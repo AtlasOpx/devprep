@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"github.com/AtlasOpx/devprep/internal/config"
+	"github.com/AtlasOpx/devprep/internal/database"
 	"log"
 	"os"
 	"os/signal"
@@ -26,6 +29,20 @@ func main() {
 
 	ongoingCtx, stopOngoingGracefully := context.WithCancel(context.Background())
 	defer stopOngoingGracefully()
+
+	cfg := config.Load()
+
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("[+] Connected to database")
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(db)
 
 	app := fiber.New(fiber.Config{
 		Prefork:       false,
