@@ -45,7 +45,7 @@ func main() {
 		return c.Next()
 	})
 
-	app.Get("/health", func(c *fiber.Ctx) error {
+	app.Get("/healthz", func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
 			return c.Status(503).JSON(fiber.Map{
 				"status": "shutting_down",
@@ -56,7 +56,7 @@ func main() {
 		})
 	})
 
-	app.Get("/ready", func(c *fiber.Ctx) error {
+	app.Get("/readyz", func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
 			return c.Status(503).JSON(fiber.Map{
 				"ready":  false,
