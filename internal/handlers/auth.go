@@ -3,8 +3,8 @@ package handlers
 import (
 	"github.com/AtlasOpx/devprep/internal/config"
 	"github.com/AtlasOpx/devprep/internal/dto"
-	authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
-	authServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+	"github.com/AtlasOpx/devprep/internal/repository"
+	"github.com/AtlasOpx/devprep/internal/service"
 	"github.com/AtlasOpx/devprep/internal/utils"
 	"time"
 
@@ -12,12 +12,12 @@ import (
 )
 
 type AuthHandler struct {
-	authService authServiceInterface.AuthService
-	authRepo    authRepoInterface.AuthRepository
+	authService *service.AuthService
+	authRepo    *repository.AuthRepository
 	cfg         *config.Config
 }
 
-func NewAuthHandler(authService authServiceInterface.AuthService, authRepo authRepoInterface.AuthRepository, cfg *config.Config) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService, authRepo *repository.AuthRepository, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		authRepo:    authRepo,
@@ -28,13 +28,13 @@ func NewAuthHandler(authService authServiceInterface.AuthService, authRepo authR
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	modelReq := dto.RegisterRequestToModel(&req)
 	userID, err := h.authService.Register(modelReq)
 	if err != nil {
-		return c.Status(400).JSON(dto.ErrorResponse{Error: "User already exists or failed to create"})
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: "User already exists or failed to create"})
 	}
 
 	response := dto.RegisterResponse{
@@ -42,19 +42,19 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		UserID:  *userID,
 	}
 
-	return c.Status(201).JSON(response)
+	return c.Status(fiber.StatusCreated).JSON(response)
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req dto.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	modelReq := dto.LoginRequestToModel(&req)
 	response, err := h.authService.Login(modelReq)
 	if err != nil {
-		return c.Status(401).JSON(dto.ErrorResponse{Error: "Invalid credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(dto.ErrorResponse{Error: "Invalid credentials"})
 	}
 
 	sessionToken, _ := utils.GenerateSessionToken()
@@ -62,7 +62,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	err = h.authRepo.CreateSession(response.User.ID, sessionToken, expiresAt, c.Get("User-Agent"), c.IP())
 	if err != nil {
-		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to create session"})
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: "Failed to create session"})
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -85,12 +85,12 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	sessionToken := c.Cookies("session_token")
 	if sessionToken == "" {
-		return c.Status(400).JSON(dto.ErrorResponse{Error: "No session token"})
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: "No session token"})
 	}
 
 	err := h.authService.Logout(sessionToken)
 	if err != nil {
-		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to logout"})
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: "Failed to logout"})
 	}
 
 	c.Cookie(&fiber.Cookie{

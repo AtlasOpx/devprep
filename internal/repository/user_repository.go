@@ -1,43 +1,36 @@
 package repository
 
 import (
-	"fmt"
 	"github.com/AtlasOpx/devprep/internal/database"
 	"github.com/AtlasOpx/devprep/internal/models"
-	"github.com/AtlasOpx/devprep/internal/repository/interfaces"
 	"github.com/google/uuid"
-	"strconv"
-	"strings"
 )
 
 type UserRepository struct {
 	db *database.DB
 }
 
-func NewUserRepository(db *database.DB) interfaces.UserRepository {
+func NewUserRepository(db *database.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) Create(user *models.User) error {
-	query := `
-        INSERT INTO users (id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
-
-	_, err := r.db.DB.Exec(query, user.ID, user.Email, user.Username, user.FirstName,
-		user.LastName, user.PasswordHash, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt)
+	_, err := r.db.Insert("users").
+		Columns("id", "email", "username", "first_name", "last_name", "password_hash", "role", "is_active", "created_at", "updated_at").
+		Values(user.ID, user.Email, user.Username, user.FirstName, user.LastName, user.PasswordHash, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt).
+		Exec()
 	return err
 }
 
 func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) {
 	var user models.User
-	query := `
-        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
-        FROM users WHERE id = $1`
-
-	err := r.db.DB.QueryRow(query, id).Scan(
-		&user.ID, &user.Email, &user.Username, &user.FirstName,
-		&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
-		&user.CreatedAt, &user.UpdatedAt)
+	err := r.db.Select("id", "email", "username", "first_name", "last_name", "password_hash", "role", "is_active", "created_at", "updated_at").
+		From("users").
+		Where("id = ?", id).
+		QueryRow().
+		Scan(&user.ID, &user.Email, &user.Username, &user.FirstName,
+			&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
+			&user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -47,14 +40,13 @@ func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) {
 
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	var user models.User
-	query := `
-        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
-        FROM users WHERE email = $1`
-
-	err := r.db.DB.QueryRow(query, email).Scan(
-		&user.ID, &user.Email, &user.Username, &user.FirstName,
-		&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
-		&user.CreatedAt, &user.UpdatedAt)
+	err := r.db.Select("id", "email", "username", "first_name", "last_name", "password_hash", "role", "is_active", "created_at", "updated_at").
+		From("users").
+		Where("email = ?", email).
+		QueryRow().
+		Scan(&user.ID, &user.Email, &user.Username, &user.FirstName,
+			&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
+			&user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -64,14 +56,13 @@ func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 
 func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
 	var user models.User
-	query := `
-        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
-        FROM users WHERE username = $1`
-
-	err := r.db.DB.QueryRow(query, username).Scan(
-		&user.ID, &user.Email, &user.Username, &user.FirstName,
-		&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
-		&user.CreatedAt, &user.UpdatedAt)
+	err := r.db.Select("id", "email", "username", "first_name", "last_name", "password_hash", "role", "is_active", "created_at", "updated_at").
+		From("users").
+		Where("username = ?", username).
+		QueryRow().
+		Scan(&user.ID, &user.Email, &user.Username, &user.FirstName,
+			&user.LastName, &user.PasswordHash, &user.Role, &user.IsActive,
+			&user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
 		return nil, err
@@ -80,48 +71,36 @@ func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
 }
 
 func (r *UserRepository) Update(id uuid.UUID, req *models.UpdateProfileRequest) error {
-	setParts := []string{"updated_at = NOW()"}
-	args := []interface{}{}
-	argIndex := 1
+	update := r.db.Update("users").Set("updated_at", "NOW()").Where("id = ?", id)
 
 	if req.FirstName != "" {
-		setParts = append(setParts, "first_name = $"+strconv.Itoa(argIndex))
-		args = append(args, req.FirstName)
-		argIndex++
+		update = update.Set("first_name", req.FirstName)
 	}
 
 	if req.LastName != "" {
-		setParts = append(setParts, "last_name = $"+strconv.Itoa(argIndex))
-		args = append(args, req.LastName)
-		argIndex++
+		update = update.Set("last_name", req.LastName)
 	}
 
 	if req.Username != "" {
-		setParts = append(setParts, "username = $"+strconv.Itoa(argIndex))
-		args = append(args, req.Username)
-		argIndex++
+		update = update.Set("username", req.Username)
 	}
 
-	query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d",
-		strings.Join(setParts, ", "), argIndex)
-	args = append(args, id)
-
-	_, err := r.db.DB.Exec(query, args...)
+	_, err := update.Exec()
 	return err
 }
 
 func (r *UserRepository) Delete(id uuid.UUID) error {
-	query := "DELETE FROM users WHERE id = $1"
-	_, err := r.db.DB.Exec(query, id)
+	_, err := r.db.Delete("users").
+		Where("id = ?", id).
+		Exec()
 	return err
 }
 
 func (r *UserRepository) GetAll() ([]models.User, error) {
-	query := `
-        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
-        FROM users ORDER BY created_at DESC`
-
-	rows, err := r.db.DB.Query(query)
+	rows, err := r.db.Select("id", "email", "username", "first_name", "last_name", "password_hash", "role", "is_active", "created_at", "updated_at").
+		From("users").
+		OrderBy("created_at DESC").
+		Query()
 	if err != nil {
 		return nil, err
 	}

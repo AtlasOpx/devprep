@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/AtlasOpx/devprep/internal/app"
 	"github.com/AtlasOpx/devprep/internal/config"
 	"github.com/AtlasOpx/devprep/internal/database"
 	"github.com/AtlasOpx/devprep/internal/routes"
@@ -41,14 +42,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(db *database.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(db)
 
-	app := fiber.New(fiber.Config{
+	defer db.Close()
+
+	fiberApp := fiber.New(fiber.Config{
 		Prefork:       false,
 		CaseSensitive: true,
 		StrictRouting: true,
@@ -59,20 +56,20 @@ func main() {
 		IdleTimeout:   120 * time.Second,
 	})
 
-	app.Use(cors.New(cors.Config{
+	fiberApp.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
 	}))
 
-	app.Use(func(c *fiber.Ctx) error {
+	fiberApp.Use(func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
 			return c.Status(503).SendString("Service Unavailable")
 		}
 		return c.Next()
 	})
 
-	app.Get("/healthz", func(c *fiber.Ctx) error {
+	fiberApp.Get("/healthz", func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
 			return c.Status(503).JSON(fiber.Map{
 				"status": "shutting_down",
@@ -83,7 +80,7 @@ func main() {
 		})
 	})
 
-	app.Get("/readyz", func(c *fiber.Ctx) error {
+	fiberApp.Get("/readyz", func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
 			return c.Status(503).JSON(fiber.Map{
 				"ready":  false,
@@ -95,7 +92,7 @@ func main() {
 		})
 	})
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	fiberApp.Get("/", func(c *fiber.Ctx) error {
 		select {
 		case <-time.After(100 * time.Millisecond):
 			return c.SendString("Hello, World!")
@@ -104,11 +101,12 @@ func main() {
 		}
 	})
 
-	routes.SetupRoutes(app, db, cfg)
+	deps := app.NewDependencies(db, cfg)
+	routes.SetupRoutes(fiberApp, deps)
 
 	go func() {
 		log.Println("Server starting on :3000")
-		if err := app.Listen(fmt.Sprintf(":%v", cfg.ServerPort)); err != nil {
+		if err := fiberApp.Listen(fmt.Sprintf(":%v", cfg.ServerPort)); err != nil {
 			log.Printf("Server failed to start: %v", err)
 			stop()
 		}
@@ -128,7 +126,7 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), _shutdownPeriod)
 	defer cancel()
 
-	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+	if err := fiberApp.ShutdownWithContext(shutdownCtx); err != nil {
 		log.Printf("Failed to shutdown gracefully within %v: %v", _shutdownPeriod, err)
 
 		log.Printf("Forcing shutdown in %v...", _shutdownHardPeriod)

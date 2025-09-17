@@ -3,18 +3,18 @@ package service
 import (
 	"database/sql"
 	"github.com/AtlasOpx/devprep/internal/models"
-	"github.com/AtlasOpx/devprep/internal/repository/interfaces"
+	"github.com/AtlasOpx/devprep/internal/repository"
 	"github.com/AtlasOpx/devprep/internal/utils"
 	"github.com/google/uuid"
 	"time"
 )
 
 type AuthService struct {
-	userRepo interfaces.UserRepository
-	authRepo interfaces.AuthRepository
+	userRepo *repository.UserRepository
+	authRepo *repository.AuthRepository
 }
 
-func NewAuthService(userRepo interfaces.UserRepository, authRepo interfaces.AuthRepository) *AuthService {
+func NewAuthService(userRepo *repository.UserRepository, authRepo *repository.AuthRepository) *AuthService {
 	return &AuthService{
 		userRepo: userRepo,
 		authRepo: authRepo,
