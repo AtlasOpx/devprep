@@ -24,7 +24,7 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 		return c.Status(404).JSON(dto.ErrorResponse{Error: "User not found"})
 	}
 
-	response := dto.UserToProfileResponse(user)
+	response := dto.UserToResponse(user)
 	return c.JSON(response)
 }
 
@@ -43,6 +43,18 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 
 	response := dto.UpdateProfileResponse{Message: "Profile updated successfully"}
+	return c.JSON(response)
+}
+
+func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uuid.UUID)
+
+	err := h.userService.DeleteUser(userID)
+	if err != nil {
+		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to delete user"})
+	}
+
+	response := dto.SuccessResponse{Message: "User deleted successfully"}
 	return c.JSON(response)
 }
 

@@ -6,12 +6,13 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBSSLMode  string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	DBSSLMode   string
+	DatabaseURL string
 
 	ServerHost string
 	ServerPort string
@@ -28,12 +29,13 @@ func Load() (*Config, error) {
 	}
 
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "password"),
-		DBName:     getEnv("DB_NAME", "auth_db"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		DBHost:      getEnv("DB_HOST", "localhost"),
+		DBPort:      getEnv("DB_PORT", "5432"),
+		DBUser:      getEnv("DB_USER", "postgres"),
+		DBPassword:  getEnv("DB_PASSWORD", "password"),
+		DBName:      getEnv("DB_NAME", "auth_db"),
+		DBSSLMode:   getEnv("DB_SSLMODE", "disable"),
+		DatabaseURL: getEnv("DATABASE_URL", "postgres://postgres:password@localhost:5432/devprep?sslmode=disable"),
 
 		ServerHost: getEnv("SERVER_HOST", "localhost"),
 		ServerPort: getEnv("SERVER_PORT", "3000"),

@@ -54,6 +54,20 @@ func UpdateProfileRequestToModel(dto *UpdateProfileRequest) *models.UpdateProfil
 	}
 }
 
+func UserToResponse(user *models.User) UserResponse {
+	return UserResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		Username:  user.Username,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Role:      string(user.Role),
+		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
+
 func UsersToListResponse(users []models.User) UsersListResponse {
 	userDTOs := make([]UserProfileResponse, len(users))
 	for i, user := range users {

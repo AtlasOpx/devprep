@@ -1,0 +1,1391 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>devprep: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/AtlasOpx/devprep/cmd/devprep/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/AtlasOpx/devprep/internal/config/config.go (0.0%)</option>
+				
+				<option value="file2">github.com/AtlasOpx/devprep/internal/database/connection.go (0.0%)</option>
+				
+				<option value="file3">github.com/AtlasOpx/devprep/internal/dto/mappers.go (0.0%)</option>
+				
+				<option value="file4">github.com/AtlasOpx/devprep/internal/handlers/auth.go (0.0%)</option>
+				
+				<option value="file5">github.com/AtlasOpx/devprep/internal/handlers/user.go (0.0%)</option>
+				
+				<option value="file6">github.com/AtlasOpx/devprep/internal/middleware/auth.go (0.0%)</option>
+				
+				<option value="file7">github.com/AtlasOpx/devprep/internal/repository/auth_repository.go (0.0%)</option>
+				
+				<option value="file8">github.com/AtlasOpx/devprep/internal/repository/user_repository.go (0.0%)</option>
+				
+				<option value="file9">github.com/AtlasOpx/devprep/internal/routes/admin_routes.go (0.0%)</option>
+				
+				<option value="file10">github.com/AtlasOpx/devprep/internal/routes/auth_routes.go (0.0%)</option>
+				
+				<option value="file11">github.com/AtlasOpx/devprep/internal/routes/routes.go (0.0%)</option>
+				
+				<option value="file12">github.com/AtlasOpx/devprep/internal/routes/user_routes.go (0.0%)</option>
+				
+				<option value="file13">github.com/AtlasOpx/devprep/internal/service/auth_service.go (0.0%)</option>
+				
+				<option value="file14">github.com/AtlasOpx/devprep/internal/service/user_service.go (0.0%)</option>
+				
+				<option value="file15">github.com/AtlasOpx/devprep/internal/utils/hash.go (0.0%)</option>
+				
+				<option value="file16">github.com/AtlasOpx/devprep/internal/utils/session.go (0.0%)</option>
+				
+				<option value="file17">github.com/AtlasOpx/devprep/test/helpers/database.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "github.com/AtlasOpx/devprep/internal/config"
+        "github.com/AtlasOpx/devprep/internal/database"
+        "github.com/AtlasOpx/devprep/internal/routes"
+        "github.com/gofiber/fiber/v2/middleware/cors"
+        "log"
+        "os"
+        "os/signal"
+        "sync/atomic"
+        "syscall"
+        "time"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+const (
+        _shutdownPeriod      = 15 * time.Second
+        _shutdownHardPeriod  = 3 * time.Second
+        _readinessDrainDelay = 5 * time.Second
+)
+
+var isShuttingDown atomic.Bool
+
+func main() <span class="cov0" title="0">{
+        rootCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+        defer stop()
+
+        ongoingCtx, stopOngoingGracefully := context.WithCancel(context.Background())
+        defer stopOngoingGracefully()
+
+        cfg, err := config.Load()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        <span class="cov0" title="0">db, err := database.Connect(cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+        <span class="cov0" title="0">defer func(db *database.DB) </span><span class="cov0" title="0">{
+                err := db.Close()
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+        }(db)
+
+        <span class="cov0" title="0">app := fiber.New(fiber.Config{
+                Prefork:       false,
+                CaseSensitive: true,
+                StrictRouting: true,
+                ServerHeader:  "DevPrep",
+                AppName:       "Dev Prep app v1.0.1",
+                ReadTimeout:   30 * time.Second,
+                WriteTimeout:  30 * time.Second,
+                IdleTimeout:   120 * time.Second,
+        })
+
+        app.Use(cors.New(cors.Config{
+                AllowOrigins: "*",
+                AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+                AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+        }))
+
+        app.Use(func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                if isShuttingDown.Load() </span><span class="cov0" title="0">{
+                        return c.Status(503).SendString("Service Unavailable")
+                }</span>
+                <span class="cov0" title="0">return c.Next()</span>
+        })
+
+        <span class="cov0" title="0">app.Get("/healthz", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                if isShuttingDown.Load() </span><span class="cov0" title="0">{
+                        return c.Status(503).JSON(fiber.Map{
+                                "status": "shutting_down",
+                        })
+                }</span>
+                <span class="cov0" title="0">return c.JSON(fiber.Map{
+                        "status": "ok",
+                })</span>
+        })
+
+        <span class="cov0" title="0">app.Get("/readyz", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                if isShuttingDown.Load() </span><span class="cov0" title="0">{
+                        return c.Status(503).JSON(fiber.Map{
+                                "ready":  false,
+                                "reason": "shutting_down",
+                        })
+                }</span>
+                <span class="cov0" title="0">return c.JSON(fiber.Map{
+                        "ready": true,
+                })</span>
+        })
+
+        <span class="cov0" title="0">app.Get("/", func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                select </span>{
+                case &lt;-time.After(100 * time.Millisecond):<span class="cov0" title="0">
+                        return c.SendString("Hello, World!")</span>
+                case &lt;-ongoingCtx.Done():<span class="cov0" title="0">
+                        return c.Status(503).SendString("Request cancelled due to shutdown")</span>
+                }
+        })
+
+        <span class="cov0" title="0">routes.SetupRoutes(app, db, cfg)
+
+        go func() </span><span class="cov0" title="0">{
+                log.Println("Server starting on :3000")
+                if err := app.Listen(fmt.Sprintf(":%v", cfg.ServerPort)); err != nil </span><span class="cov0" title="0">{
+                        log.Printf("Server failed to start: %v", err)
+                        stop()
+                }</span>
+        }()
+
+        <span class="cov0" title="0">&lt;-rootCtx.Done()
+        log.Println("Received shutdown signal, initiating graceful shutdown...")
+
+        isShuttingDown.Store(true)
+
+        log.Printf("Waiting %v for readiness checks to propagate...", _readinessDrainDelay)
+        time.Sleep(_readinessDrainDelay)
+
+        log.Println("Stopping acceptance of new requests and waiting for ongoing requests to finish...")
+        stopOngoingGracefully()
+
+        shutdownCtx, cancel := context.WithTimeout(context.Background(), _shutdownPeriod)
+        defer cancel()
+
+        if err := app.ShutdownWithContext(shutdownCtx); err != nil </span><span class="cov0" title="0">{
+                log.Printf("Failed to shutdown gracefully within %v: %v", _shutdownPeriod, err)
+
+                log.Printf("Forcing shutdown in %v...", _shutdownHardPeriod)
+                time.Sleep(_shutdownHardPeriod)
+
+                os.Exit(1)
+        }</span>
+
+        <span class="cov0" title="0">log.Println("Server shut down gracefully")</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package config
+
+import (
+        "github.com/joho/godotenv"
+        "os"
+)
+
+type Config struct {
+        DBHost      string
+        DBPort      string
+        DBUser      string
+        DBPassword  string
+        DBName      string
+        DBSSLMode   string
+        DatabaseURL string
+
+        ServerHost string
+        ServerPort string
+
+        RedisHost     string
+        RedisPort     string
+        RedisPassword string
+}
+
+func Load() (*Config, error) <span class="cov0" title="0">{
+        err := godotenv.Load(".env")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return &amp;Config{
+                DBHost:      getEnv("DB_HOST", "localhost"),
+                DBPort:      getEnv("DB_PORT", "5432"),
+                DBUser:      getEnv("DB_USER", "postgres"),
+                DBPassword:  getEnv("DB_PASSWORD", "password"),
+                DBName:      getEnv("DB_NAME", "auth_db"),
+                DBSSLMode:   getEnv("DB_SSLMODE", "disable"),
+                DatabaseURL: getEnv("DATABASE_URL", "postgres://postgres:password@localhost:5432/devprep?sslmode=disable"),
+
+                ServerHost: getEnv("SERVER_HOST", "localhost"),
+                ServerPort: getEnv("SERVER_PORT", "3000"),
+
+                RedisHost:     getEnv("REDIS_HOST", "localhost"),
+                RedisPort:     getEnv("REDIS_PORT", "6379"),
+                RedisPassword: getEnv("REDIS_PASSWORD", ""),
+        }, nil</span>
+}
+
+func getEnv(key, defaultValue string) string <span class="cov0" title="0">{
+        if value := os.Getenv(key); value != "" </span><span class="cov0" title="0">{
+                return value
+        }</span>
+        <span class="cov0" title="0">return defaultValue</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package database
+
+import (
+        "database/sql"
+        "fmt"
+        "github.com/AtlasOpx/devprep/internal/config"
+        "github.com/Masterminds/squirrel"
+        _ "github.com/lib/pq"
+)
+
+type DB struct {
+        *sql.DB
+        Builder squirrel.StatementBuilderType
+}
+
+func Connect(cfg *config.Config) (*DB, error) <span class="cov0" title="0">{
+        dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+                cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSSLMode)
+
+        sqlDB, err := sql.Open("postgres", dsn)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error connecting to database: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">if err := sqlDB.Ping(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("error pinging database: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return &amp;DB{
+                DB:      sqlDB,
+                Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).RunWith(sqlDB),
+        }, nil</span>
+}
+
+func (db *DB) Select(columns ...string) squirrel.SelectBuilder <span class="cov0" title="0">{
+        return db.Builder.Select(columns...)
+}</span>
+
+func (db *DB) Insert(table string) squirrel.InsertBuilder <span class="cov0" title="0">{
+        return db.Builder.Insert(table)
+}</span>
+
+func (db *DB) Update(table string) squirrel.UpdateBuilder <span class="cov0" title="0">{
+        return db.Builder.Update(table)
+}</span>
+
+func (db *DB) Delete(table string) squirrel.DeleteBuilder <span class="cov0" title="0">{
+        return db.Builder.Delete(table)
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package dto
+
+import (
+        "github.com/AtlasOpx/devprep/internal/models"
+)
+
+func RegisterRequestToModel(dto *RegisterRequest) *models.RegisterRequest <span class="cov0" title="0">{
+        return &amp;models.RegisterRequest{
+                Email:     dto.Email,
+                Username:  dto.Username,
+                FirstName: dto.FirstName,
+                LastName:  dto.LastName,
+                Password:  dto.Password,
+        }
+}</span>
+
+func LoginRequestToModel(dto *LoginRequest) *models.LoginRequest <span class="cov0" title="0">{
+        return &amp;models.LoginRequest{
+                Email:    dto.Email,
+                Password: dto.Password,
+        }
+}</span>
+
+func UserToDTO(user *models.User) UserDTO <span class="cov0" title="0">{
+        return UserDTO{
+                ID:        user.ID,
+                Email:     user.Email,
+                Username:  user.Username,
+                FirstName: user.FirstName,
+                LastName:  user.LastName,
+                Role:      string(user.Role),
+        }
+}</span>
+
+func UserToProfileResponse(user *models.User) UserProfileResponse <span class="cov0" title="0">{
+        return UserProfileResponse{
+                ID:        user.ID,
+                Email:     user.Email,
+                Username:  user.Username,
+                FirstName: user.FirstName,
+                LastName:  user.LastName,
+                Role:      string(user.Role),
+                IsActive:  user.IsActive,
+                CreatedAt: user.CreatedAt,
+                UpdatedAt: user.UpdatedAt,
+        }
+}</span>
+
+func UpdateProfileRequestToModel(dto *UpdateProfileRequest) *models.UpdateProfileRequest <span class="cov0" title="0">{
+        return &amp;models.UpdateProfileRequest{
+                FirstName: dto.FirstName,
+                LastName:  dto.LastName,
+                Username:  dto.Username,
+        }
+}</span>
+
+func UserToResponse(user *models.User) UserResponse <span class="cov0" title="0">{
+        return UserResponse{
+                ID:        user.ID,
+                Email:     user.Email,
+                Username:  user.Username,
+                FirstName: user.FirstName,
+                LastName:  user.LastName,
+                Role:      string(user.Role),
+                IsActive:  user.IsActive,
+                CreatedAt: user.CreatedAt,
+                UpdatedAt: user.UpdatedAt,
+        }
+}</span>
+
+func UsersToListResponse(users []models.User) UsersListResponse <span class="cov0" title="0">{
+        userDTOs := make([]UserProfileResponse, len(users))
+        for i, user := range users </span><span class="cov0" title="0">{
+                userDTOs[i] = UserToProfileResponse(&amp;user)
+        }</span>
+
+        <span class="cov0" title="0">return UsersListResponse{
+                Users: userDTOs,
+                Total: len(users),
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package handlers
+
+import (
+        "github.com/AtlasOpx/devprep/internal/config"
+        "github.com/AtlasOpx/devprep/internal/dto"
+        authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        authServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+        "github.com/AtlasOpx/devprep/internal/utils"
+        "time"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+type AuthHandler struct {
+        authService authServiceInterface.AuthService
+        authRepo    authRepoInterface.AuthRepository
+        cfg         *config.Config
+}
+
+func NewAuthHandler(authService authServiceInterface.AuthService, authRepo authRepoInterface.AuthRepository, cfg *config.Config) *AuthHandler <span class="cov0" title="0">{
+        return &amp;AuthHandler{
+                authService: authService,
+                authRepo:    authRepo,
+                cfg:         cfg,
+        }
+}</span>
+
+func (h *AuthHandler) Register(c *fiber.Ctx) error <span class="cov0" title="0">{
+        var req dto.RegisterRequest
+        if err := c.BodyParser(&amp;req); err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+        }</span>
+
+        <span class="cov0" title="0">modelReq := dto.RegisterRequestToModel(&amp;req)
+        userID, err := h.authService.Register(modelReq)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(dto.ErrorResponse{Error: "User already exists or failed to create"})
+        }</span>
+
+        <span class="cov0" title="0">response := dto.RegisterResponse{
+                Message: "User created successfully",
+                UserID:  *userID,
+        }
+
+        return c.Status(201).JSON(response)</span>
+}
+
+func (h *AuthHandler) Login(c *fiber.Ctx) error <span class="cov0" title="0">{
+        var req dto.LoginRequest
+        if err := c.BodyParser(&amp;req); err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+        }</span>
+
+        <span class="cov0" title="0">modelReq := dto.LoginRequestToModel(&amp;req)
+        response, err := h.authService.Login(modelReq)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(401).JSON(dto.ErrorResponse{Error: "Invalid credentials"})
+        }</span>
+
+        <span class="cov0" title="0">sessionToken := utils.GenerateSessionToken()
+        expiresAt := time.Now().Add(time.Hour * 24)
+
+        err = h.authRepo.CreateSession(response.User.ID, sessionToken, expiresAt, c.Get("User-Agent"), c.IP())
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to create session"})
+        }</span>
+
+        <span class="cov0" title="0">c.Cookie(&amp;fiber.Cookie{
+                Name:     "session_token",
+                Value:    sessionToken,
+                Expires:  expiresAt,
+                HTTPOnly: true,
+                Secure:   false,
+                SameSite: "Lax",
+        })
+
+        loginResponse := dto.LoginResponse{
+                Message: response.Message,
+                User:    dto.UserToDTO(&amp;response.User),
+        }
+
+        return c.JSON(loginResponse)</span>
+}
+
+func (h *AuthHandler) Logout(c *fiber.Ctx) error <span class="cov0" title="0">{
+        sessionToken := c.Cookies("session_token")
+        if sessionToken == "" </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(dto.ErrorResponse{Error: "No session token"})
+        }</span>
+
+        <span class="cov0" title="0">err := h.authService.Logout(sessionToken)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to logout"})
+        }</span>
+
+        <span class="cov0" title="0">c.Cookie(&amp;fiber.Cookie{
+                Name:     "session_token",
+                Value:    "",
+                Expires:  time.Now().Add(-time.Hour),
+                HTTPOnly: true,
+        })
+
+        response := dto.LogoutResponse{Message: "Logout successful"}
+        return c.JSON(response)</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package handlers
+
+import (
+        "github.com/AtlasOpx/devprep/internal/dto"
+        userServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+
+        "github.com/gofiber/fiber/v2"
+        "github.com/google/uuid"
+)
+
+type UserHandler struct {
+        userService userServiceInterface.UserService
+}
+
+func NewUserHandler(userService userServiceInterface.UserService) *UserHandler <span class="cov0" title="0">{
+        return &amp;UserHandler{userService: userService}
+}</span>
+
+func (h *UserHandler) GetProfile(c *fiber.Ctx) error <span class="cov0" title="0">{
+        userID := c.Locals("user_id").(uuid.UUID)
+
+        user, err := h.userService.GetProfile(userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(404).JSON(dto.ErrorResponse{Error: "User not found"})
+        }</span>
+
+        <span class="cov0" title="0">response := dto.UserToResponse(user)
+        return c.JSON(response)</span>
+}
+
+func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error <span class="cov0" title="0">{
+        userID := c.Locals("user_id").(uuid.UUID)
+
+        var req dto.UpdateProfileRequest
+        if err := c.BodyParser(&amp;req); err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+        }</span>
+
+        <span class="cov0" title="0">modelReq := dto.UpdateProfileRequestToModel(&amp;req)
+        err := h.userService.UpdateProfile(userID, modelReq)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to update profile"})
+        }</span>
+
+        <span class="cov0" title="0">response := dto.UpdateProfileResponse{Message: "Profile updated successfully"}
+        return c.JSON(response)</span>
+}
+
+func (h *UserHandler) DeleteUser(c *fiber.Ctx) error <span class="cov0" title="0">{
+        userID := c.Locals("user_id").(uuid.UUID)
+
+        err := h.userService.DeleteUser(userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to delete user"})
+        }</span>
+
+        <span class="cov0" title="0">response := dto.SuccessResponse{Message: "User deleted successfully"}
+        return c.JSON(response)</span>
+}
+
+func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error <span class="cov0" title="0">{
+        users, err := h.userService.GetAllUsers()
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to get users"})
+        }</span>
+
+        <span class="cov0" title="0">response := dto.UsersToListResponse(users)
+        return c.JSON(response)</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package middleware
+
+import (
+        "github.com/AtlasOpx/devprep/internal/models"
+        authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        "time"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+type AuthMiddleware struct {
+        authRepo authRepoInterface.AuthRepository
+}
+
+func NewAuthMiddleware(authRepo authRepoInterface.AuthRepository) *AuthMiddleware <span class="cov0" title="0">{
+        return &amp;AuthMiddleware{authRepo: authRepo}
+}</span>
+
+func (m *AuthMiddleware) RequireAuth(c *fiber.Ctx) error <span class="cov0" title="0">{
+        sessionToken := c.Cookies("session_token")
+        if sessionToken == "" </span><span class="cov0" title="0">{
+                return c.Status(401).JSON(fiber.Map{"error": "Authentication required"})
+        }</span>
+
+        <span class="cov0" title="0">session, err := m.authRepo.GetSessionByToken(sessionToken)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(401).JSON(fiber.Map{"error": "Invalid session"})
+        }</span>
+
+        <span class="cov0" title="0">if session.ExpiresAt.Before(time.Now()) </span><span class="cov0" title="0">{
+                m.authRepo.DeleteSession(sessionToken)
+                return c.Status(401).JSON(fiber.Map{"error": "Session expired"})
+        }</span>
+
+        <span class="cov0" title="0">user, err := m.authRepo.ValidateSession(sessionToken)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(401).JSON(fiber.Map{"error": "Invalid session"})
+        }</span>
+
+        <span class="cov0" title="0">c.Locals("user_id", user.ID)
+        c.Locals("user_role", user.Role)
+
+        return c.Next()</span>
+}
+
+func (m *AuthMiddleware) RequireRole(requiredRole string) fiber.Handler <span class="cov0" title="0">{
+        return func(c *fiber.Ctx) error </span><span class="cov0" title="0">{
+                userRole := c.Locals("user_role").(models.UserRole)
+
+                if string(userRole) != requiredRole </span><span class="cov0" title="0">{
+                        return c.Status(403).JSON(fiber.Map{"error": "Access denied"})
+                }</span>
+
+                <span class="cov0" title="0">return c.Next()</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package repository
+
+import (
+        "github.com/AtlasOpx/devprep/internal/database"
+        "github.com/AtlasOpx/devprep/internal/models"
+        "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        "github.com/google/uuid"
+        "time"
+)
+
+type AuthRepository struct {
+        db *database.DB
+}
+
+func NewAuthRepository(db *database.DB) interfaces.AuthRepository <span class="cov0" title="0">{
+        return &amp;AuthRepository{db: db}
+}</span>
+
+func (r *AuthRepository) CreateSession(userID uuid.UUID, sessionToken string, expiresAt time.Time, userAgent, ipAddress string) error <span class="cov0" title="0">{
+        query := `
+        INSERT INTO sessions (user_id, session_token, expires_at, user_agent, ip_address)
+        VALUES ($1, $2, $3, $4, $5)`
+
+        _, err := r.db.DB.Exec(query, userID, sessionToken, expiresAt, userAgent, ipAddress)
+        return err
+}</span>
+
+func (r *AuthRepository) DeleteSession(sessionToken string) error <span class="cov0" title="0">{
+        query := "DELETE FROM sessions WHERE session_token = $1"
+        _, err := r.db.DB.Exec(query, sessionToken)
+        return err
+}</span>
+
+func (r *AuthRepository) GetSessionByToken(sessionToken string) (*models.Session, error) <span class="cov0" title="0">{
+        var session models.Session
+        query := `
+        SELECT user_id, session_token, expires_at, user_agent, ip_address, created_at
+        FROM sessions WHERE session_token = $1 AND expires_at &gt; NOW()`
+
+        err := r.db.DB.QueryRow(query, sessionToken).Scan(
+                &amp;session.UserID, &amp;session.SessionToken, &amp;session.ExpiresAt,
+                &amp;session.UserAgent, &amp;session.IPAddress, &amp;session.CreatedAt)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;session, nil</span>
+}
+
+func (r *AuthRepository) ValidateSession(sessionToken string) (*models.User, error) <span class="cov0" title="0">{
+        var user models.User
+        query := `
+        SELECT u.id, u.email, u.username, u.first_name, u.last_name, u.password_hash, u.role, u.is_active, u.created_at, u.updated_at
+        FROM users u
+        JOIN sessions s ON u.id = s.user_id
+        WHERE s.session_token = $1 AND s.expires_at &gt; NOW() AND u.is_active = true`
+
+        err := r.db.DB.QueryRow(query, sessionToken).Scan(
+                &amp;user.ID, &amp;user.Email, &amp;user.Username, &amp;user.FirstName,
+                &amp;user.LastName, &amp;user.PasswordHash, &amp;user.Role, &amp;user.IsActive,
+                &amp;user.CreatedAt, &amp;user.UpdatedAt)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package repository
+
+import (
+        "fmt"
+        "github.com/AtlasOpx/devprep/internal/database"
+        "github.com/AtlasOpx/devprep/internal/models"
+        "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        "github.com/google/uuid"
+        "strconv"
+        "strings"
+)
+
+type UserRepository struct {
+        db *database.DB
+}
+
+func NewUserRepository(db *database.DB) interfaces.UserRepository <span class="cov0" title="0">{
+        return &amp;UserRepository{db: db}
+}</span>
+
+func (r *UserRepository) Create(user *models.User) error <span class="cov0" title="0">{
+        query := `
+        INSERT INTO users (id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+
+        _, err := r.db.DB.Exec(query, user.ID, user.Email, user.Username, user.FirstName,
+                user.LastName, user.PasswordHash, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt)
+        return err
+}</span>
+
+func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) <span class="cov0" title="0">{
+        var user models.User
+        query := `
+        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
+        FROM users WHERE id = $1`
+
+        err := r.db.DB.QueryRow(query, id).Scan(
+                &amp;user.ID, &amp;user.Email, &amp;user.Username, &amp;user.FirstName,
+                &amp;user.LastName, &amp;user.PasswordHash, &amp;user.Role, &amp;user.IsActive,
+                &amp;user.CreatedAt, &amp;user.UpdatedAt)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+
+func (r *UserRepository) GetByEmail(email string) (*models.User, error) <span class="cov0" title="0">{
+        var user models.User
+        query := `
+        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
+        FROM users WHERE email = $1`
+
+        err := r.db.DB.QueryRow(query, email).Scan(
+                &amp;user.ID, &amp;user.Email, &amp;user.Username, &amp;user.FirstName,
+                &amp;user.LastName, &amp;user.PasswordHash, &amp;user.Role, &amp;user.IsActive,
+                &amp;user.CreatedAt, &amp;user.UpdatedAt)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+
+func (r *UserRepository) GetByUsername(username string) (*models.User, error) <span class="cov0" title="0">{
+        var user models.User
+        query := `
+        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
+        FROM users WHERE username = $1`
+
+        err := r.db.DB.QueryRow(query, username).Scan(
+                &amp;user.ID, &amp;user.Email, &amp;user.Username, &amp;user.FirstName,
+                &amp;user.LastName, &amp;user.PasswordHash, &amp;user.Role, &amp;user.IsActive,
+                &amp;user.CreatedAt, &amp;user.UpdatedAt)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+
+func (r *UserRepository) Update(id uuid.UUID, req *models.UpdateProfileRequest) error <span class="cov0" title="0">{
+        setParts := []string{"updated_at = NOW()"}
+        args := []interface{}{}
+        argIndex := 1
+
+        if req.FirstName != "" </span><span class="cov0" title="0">{
+                setParts = append(setParts, "first_name = $"+strconv.Itoa(argIndex))
+                args = append(args, req.FirstName)
+                argIndex++
+        }</span>
+
+        <span class="cov0" title="0">if req.LastName != "" </span><span class="cov0" title="0">{
+                setParts = append(setParts, "last_name = $"+strconv.Itoa(argIndex))
+                args = append(args, req.LastName)
+                argIndex++
+        }</span>
+
+        <span class="cov0" title="0">if req.Username != "" </span><span class="cov0" title="0">{
+                setParts = append(setParts, "username = $"+strconv.Itoa(argIndex))
+                args = append(args, req.Username)
+                argIndex++
+        }</span>
+
+        <span class="cov0" title="0">query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d",
+                strings.Join(setParts, ", "), argIndex)
+        args = append(args, id)
+
+        _, err := r.db.DB.Exec(query, args...)
+        return err</span>
+}
+
+func (r *UserRepository) Delete(id uuid.UUID) error <span class="cov0" title="0">{
+        query := "DELETE FROM users WHERE id = $1"
+        _, err := r.db.DB.Exec(query, id)
+        return err
+}</span>
+
+func (r *UserRepository) GetAll() ([]models.User, error) <span class="cov0" title="0">{
+        query := `
+        SELECT id, email, username, first_name, last_name, password_hash, role, is_active, created_at, updated_at
+        FROM users ORDER BY created_at DESC`
+
+        rows, err := r.db.DB.Query(query)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">defer rows.Close()
+
+        var users []models.User
+        for rows.Next() </span><span class="cov0" title="0">{
+                var user models.User
+                err := rows.Scan(
+                        &amp;user.ID, &amp;user.Email, &amp;user.Username, &amp;user.FirstName,
+                        &amp;user.LastName, &amp;user.PasswordHash, &amp;user.Role, &amp;user.IsActive,
+                        &amp;user.CreatedAt, &amp;user.UpdatedAt)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">users = append(users, user)</span>
+        }
+
+        <span class="cov0" title="0">return users, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package routes
+
+import (
+        "github.com/AtlasOpx/devprep/internal/handlers"
+        "github.com/AtlasOpx/devprep/internal/middleware"
+        "github.com/gofiber/fiber/v2"
+)
+
+func SetupAdminRoutes(api fiber.Router, userHandler *handlers.UserHandler, authMiddleware *middleware.AuthMiddleware) <span class="cov0" title="0">{
+        admin := api.Group("/admin")
+        admin.Use(authMiddleware.RequireAuth)
+        admin.Use(authMiddleware.RequireRole("admin"))
+
+        admin.Get("/users", userHandler.GetAllUsers)
+        //admin.Get("/users/:id", userHandler.GetUserByID)
+        //admin.Put("/users/:id", userHandler.UpdateUserByID)
+        //admin.Delete("/users/:id", userHandler.DeleteUserByID)
+        //admin.Post("/users/:id/ban", userHandler.BanUser)
+        //admin.Post("/users/:id/unban", userHandler.UnbanUser)
+        //
+        //admin.Get("/stats", userHandler.GetSystemStats)
+}</span>
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">// internal/routes/auth_routes.go
+package routes
+
+import (
+        "github.com/AtlasOpx/devprep/internal/handlers"
+        "github.com/AtlasOpx/devprep/internal/middleware"
+        "github.com/gofiber/fiber/v2"
+)
+
+func SetupAuthRoutes(api fiber.Router, authHandler *handlers.AuthHandler, authMiddleware *middleware.AuthMiddleware) <span class="cov0" title="0">{
+        auth := api.Group("/auth")
+        auth.Post("/register", authHandler.Register)
+        auth.Post("/login", authHandler.Login)
+        auth.Post("/logout", authMiddleware.RequireAuth, authHandler.Logout)
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package routes
+
+import (
+        "github.com/AtlasOpx/devprep/internal/config"
+        "github.com/AtlasOpx/devprep/internal/database"
+        "github.com/AtlasOpx/devprep/internal/handlers"
+        "github.com/AtlasOpx/devprep/internal/middleware"
+        "github.com/AtlasOpx/devprep/internal/repository"
+        "github.com/AtlasOpx/devprep/internal/service"
+        "github.com/gofiber/fiber/v2"
+)
+
+func SetupRoutes(app *fiber.App, db *database.DB, cfg *config.Config) <span class="cov0" title="0">{
+        userRepo := repository.NewUserRepository(db)
+        authRepo := repository.NewAuthRepository(db)
+
+        authService := service.NewAuthService(userRepo, authRepo)
+        userService := service.NewUserService(userRepo)
+
+        authHandler := handlers.NewAuthHandler(authService, authRepo, cfg)
+        userHandler := handlers.NewUserHandler(userService)
+
+        authMiddleware := middleware.NewAuthMiddleware(authRepo)
+
+        api := app.Group("/api/v1")
+
+        SetupAuthRoutes(api, authHandler, authMiddleware)
+        SetupUserRoutes(api, userHandler, authMiddleware)
+        SetupAdminRoutes(api, userHandler, authMiddleware)
+}</span>
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package routes
+
+import (
+        "github.com/AtlasOpx/devprep/internal/handlers"
+        "github.com/AtlasOpx/devprep/internal/middleware"
+        "github.com/gofiber/fiber/v2"
+)
+
+func SetupUserRoutes(api fiber.Router, userHandler *handlers.UserHandler, authMiddleware *middleware.AuthMiddleware) <span class="cov0" title="0">{
+        user := api.Group("/user")
+        user.Use(authMiddleware.RequireAuth)
+
+        user.Get("/profile", userHandler.GetProfile)
+        user.Put("/profile", userHandler.UpdateProfile)
+}</span>
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package service
+
+import (
+        "database/sql"
+        "github.com/AtlasOpx/devprep/internal/models"
+        "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        "github.com/AtlasOpx/devprep/internal/utils"
+        "github.com/google/uuid"
+        "time"
+)
+
+type AuthService struct {
+        userRepo interfaces.UserRepository
+        authRepo interfaces.AuthRepository
+}
+
+func NewAuthService(userRepo interfaces.UserRepository, authRepo interfaces.AuthRepository) *AuthService <span class="cov0" title="0">{
+        return &amp;AuthService{
+                userRepo: userRepo,
+                authRepo: authRepo,
+        }
+}</span>
+
+func (s *AuthService) Register(req *models.RegisterRequest) (*uuid.UUID, error) <span class="cov0" title="0">{
+        existingUser, _ := s.userRepo.GetByEmail(req.Email)
+        if existingUser != nil </span><span class="cov0" title="0">{
+                return nil, sql.ErrNoRows
+        }</span>
+
+        <span class="cov0" title="0">hashedPassword, err := utils.HashPassword(req.Password)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">userID := uuid.New()
+        user := &amp;models.User{
+                ID:           userID,
+                Email:        req.Email,
+                Username:     req.Username,
+                FirstName:    req.FirstName,
+                LastName:     req.LastName,
+                PasswordHash: hashedPassword,
+                Role:         models.UserRoleUser,
+                IsActive:     true,
+                CreatedAt:    time.Now(),
+                UpdatedAt:    time.Now(),
+        }
+
+        err = s.userRepo.Create(user)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return &amp;userID, nil</span>
+}
+
+func (s *AuthService) Login(req *models.LoginRequest) (*models.LoginResponse, error) <span class="cov0" title="0">{
+        user, err := s.userRepo.GetByEmail(req.Email)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">if !utils.CheckPasswordHash(req.Password, user.PasswordHash) </span><span class="cov0" title="0">{
+                return nil, sql.ErrNoRows
+        }</span>
+
+        <span class="cov0" title="0">if !user.IsActive </span><span class="cov0" title="0">{
+                return nil, sql.ErrNoRows
+        }</span>
+
+        <span class="cov0" title="0">response := &amp;models.LoginResponse{
+                Message: "Login successful",
+                User:    *user,
+        }
+
+        return response, nil</span>
+}
+
+func (s *AuthService) Logout(sessionToken string) error <span class="cov0" title="0">{
+        return s.authRepo.DeleteSession(sessionToken)
+}</span>
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package service
+
+import (
+        "github.com/AtlasOpx/devprep/internal/models"
+        "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+        "github.com/google/uuid"
+)
+
+type UserService struct {
+        userRepo interfaces.UserRepository
+}
+
+func NewUserService(userRepo interfaces.UserRepository) *UserService <span class="cov0" title="0">{
+        return &amp;UserService{
+                userRepo: userRepo,
+        }
+}</span>
+
+func (s *UserService) GetProfile(userID uuid.UUID) (*models.User, error) <span class="cov0" title="0">{
+        return s.userRepo.GetByID(userID)
+}</span>
+
+func (s *UserService) UpdateProfile(userID uuid.UUID, req *models.UpdateProfileRequest) error <span class="cov0" title="0">{
+        return s.userRepo.Update(userID, req)
+}</span>
+
+func (s *UserService) GetByID(userID uuid.UUID) (*models.User, error) <span class="cov0" title="0">{
+        return s.userRepo.GetByID(userID)
+}</span>
+
+func (s *UserService) GetByEmail(email string) (*models.User, error) <span class="cov0" title="0">{
+        return s.userRepo.GetByEmail(email)
+}</span>
+
+func (s *UserService) GetByUsername(username string) (*models.User, error) <span class="cov0" title="0">{
+        return s.userRepo.GetByUsername(username)
+}</span>
+
+func (s *UserService) DeleteUser(userID uuid.UUID) error <span class="cov0" title="0">{
+        return s.userRepo.Delete(userID)
+}</span>
+
+func (s *UserService) GetAllUsers() ([]models.User, error) <span class="cov0" title="0">{
+        return s.userRepo.GetAll()
+}</span>
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package utils
+
+import (
+        "crypto/rand"
+        "encoding/base64"
+        "fmt"
+        "golang.org/x/crypto/argon2"
+        "strings"
+)
+
+const (
+        saltLength = 16
+        keyLength  = 32
+        time       = 1
+        memory     = 64 * 1024
+        threads    = 4
+)
+
+func HashPassword(password string) (string, error) <span class="cov0" title="0">{
+        salt := make([]byte, saltLength)
+
+        if _, err := rand.Read(salt); err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        <span class="cov0" title="0">hash := argon2.IDKey([]byte(password), salt, time, memory, threads, keyLength)
+
+        saltEncoded := base64.RawStdEncoding.EncodeToString(salt)
+        hashEncoded := base64.RawStdEncoding.EncodeToString(hash)
+
+        return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, memory, time, threads, saltEncoded, hashEncoded), nil</span>
+}
+
+func CheckPasswordHash(password, hashedPassword string) bool <span class="cov0" title="0">{
+        parts := strings.Split(hashedPassword, "$")
+        if len(parts) != 6 </span><span class="cov0" title="0">{
+                return false
+        }</span>
+
+        <span class="cov0" title="0">salt, err := base64.RawStdEncoding.DecodeString(parts[4])
+        if err != nil </span><span class="cov0" title="0">{
+                return false
+        }</span>
+
+        <span class="cov0" title="0">hash, err := base64.RawStdEncoding.DecodeString(parts[5])
+        if err != nil </span><span class="cov0" title="0">{
+                return false
+        }</span>
+
+        <span class="cov0" title="0">newHash := argon2.IDKey([]byte(password), salt, time, memory, threads, keyLength)
+
+        if len(hash) != len(newHash) </span><span class="cov0" title="0">{
+                return false
+        }</span>
+
+        <span class="cov0" title="0">for i := 0; i &lt; len(hash); i++ </span><span class="cov0" title="0">{
+                if hash[i] != newHash[i] </span><span class="cov0" title="0">{
+                        return false
+                }</span>
+        }
+
+        <span class="cov0" title="0">return true</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package utils
+
+import (
+        "crypto/rand"
+        "encoding/hex"
+)
+
+func GenerateSessionToken() string <span class="cov0" title="0">{
+        bytes := make([]byte, 32)
+        rand.Read(bytes)
+        return hex.EncodeToString(bytes)
+}</span>
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package helpers
+
+import (
+        "database/sql"
+        "fmt"
+        "log"
+        "time"
+
+        "github.com/AtlasOpx/devprep/internal/config"
+        "github.com/AtlasOpx/devprep/internal/database"
+        _ "github.com/lib/pq"
+        "github.com/ory/dockertest/v3"
+        "github.com/ory/dockertest/v3/docker"
+)
+
+type TestDatabase struct {
+        DB       *database.DB
+        Pool     *dockertest.Pool
+        Resource *dockertest.Resource
+}
+
+func SetupTestDatabase() (*TestDatabase, error) <span class="cov0" title="0">{
+        pool, err := dockertest.NewPool("")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not connect to docker: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">err = pool.Client.Ping()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not connect to Docker: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">options := &amp;dockertest.RunOptions{
+                Repository: "postgres",
+                Tag:        "15-alpine",
+                Env: []string{
+                        "POSTGRES_PASSWORD=testpassword",
+                        "POSTGRES_USER=testuser",
+                        "POSTGRES_DB=devprep_test",
+                        "listen_addresses = '*'",
+                },
+        }
+
+        resource, err := pool.RunWithOptions(options, func(config *docker.HostConfig) </span><span class="cov0" title="0">{
+                config.AutoRemove = true
+                config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+        }</span>)
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not start resource: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">hostAndPort := resource.GetHostPort("5432/tcp")
+        databaseURL := fmt.Sprintf("postgres://testuser:testpassword@%s/devprep_test?sslmode=disable", hostAndPort)
+
+        log.Println("Connecting to database on url: ", databaseURL)
+
+        resource.Expire(120)
+
+        pool.MaxWait = 120 * time.Second
+        var db *sql.DB
+        if err = pool.Retry(func() error </span><span class="cov0" title="0">{
+                db, err = sql.Open("postgres", databaseURL)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">return db.Ping()</span>
+        }); err != nil <span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not connect to docker: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">cfg := &amp;config.Config{
+                DatabaseURL: databaseURL,
+        }
+
+        dbWrapper, err := database.Connect(cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not connect to test database: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">err = runMigrations(dbWrapper.DB)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not run migrations: %s", err)
+        }</span>
+
+        <span class="cov0" title="0">return &amp;TestDatabase{
+                DB:       dbWrapper,
+                Pool:     pool,
+                Resource: resource,
+        }, nil</span>
+}
+
+func (td *TestDatabase) Cleanup() error <span class="cov0" title="0">{
+        if td.DB != nil </span><span class="cov0" title="0">{
+                td.DB.Close()
+        }</span>
+        <span class="cov0" title="0">if td.Pool != nil &amp;&amp; td.Resource != nil </span><span class="cov0" title="0">{
+                return td.Pool.Purge(td.Resource)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (td *TestDatabase) CleanupData() error <span class="cov0" title="0">{
+        if td.DB == nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("database connection is nil")
+        }</span>
+
+        <span class="cov0" title="0">queries := []string{
+                "DELETE FROM sessions",
+                "DELETE FROM users",
+        }
+
+        for _, query := range queries </span><span class="cov0" title="0">{
+                _, err := td.DB.DB.Exec(query)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to cleanup data: %s", err)
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func runMigrations(db *sql.DB) error <span class="cov0" title="0">{
+        migrations := []string{
+                `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`,
+                `CREATE TABLE IF NOT EXISTS users (
+                        id UUID PRIMARY KEY,
+                        email VARCHAR(255) UNIQUE NOT NULL,
+                        username VARCHAR(100) UNIQUE NOT NULL,
+                        first_name VARCHAR(100) NOT NULL,
+                        last_name VARCHAR(100) NOT NULL,
+                        password_hash VARCHAR(255) NOT NULL,
+                        role VARCHAR(50) NOT NULL DEFAULT 'user',
+                        is_active BOOLEAN NOT NULL DEFAULT true,
+                        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+                )`,
+                `CREATE TABLE IF NOT EXISTS sessions (
+                        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        token VARCHAR(255) UNIQUE NOT NULL,
+                        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                        user_agent TEXT,
+                        ip_address INET,
+                        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+                )`,
+                `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
+                `CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`,
+                `CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active)`,
+                `CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)`,
+                `CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`,
+                `CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)`,
+        }
+
+        for _, migration := range migrations </span><span class="cov0" title="0">{
+                _, err := db.Exec(migration)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to execute migration: %s", err)
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

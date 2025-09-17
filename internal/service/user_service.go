@@ -24,6 +24,22 @@ func (s *UserService) UpdateProfile(userID uuid.UUID, req *models.UpdateProfileR
 	return s.userRepo.Update(userID, req)
 }
 
+func (s *UserService) GetByID(userID uuid.UUID) (*models.User, error) {
+	return s.userRepo.GetByID(userID)
+}
+
+func (s *UserService) GetByEmail(email string) (*models.User, error) {
+	return s.userRepo.GetByEmail(email)
+}
+
+func (s *UserService) GetByUsername(username string) (*models.User, error) {
+	return s.userRepo.GetByUsername(username)
+}
+
+func (s *UserService) DeleteUser(userID uuid.UUID) error {
+	return s.userRepo.Delete(userID)
+}
+
 func (s *UserService) GetAllUsers() ([]models.User, error) {
 	return s.userRepo.GetAll()
 }
