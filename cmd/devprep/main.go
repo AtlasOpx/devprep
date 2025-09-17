@@ -41,12 +41,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(db *database.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(db)
+
+	defer db.Close()
 
 	app := fiber.New(fiber.Config{
 		Prefork:       false,

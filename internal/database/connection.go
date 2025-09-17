@@ -22,7 +22,7 @@ func Connect(cfg *config.Config) (*DB, error) {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
 
-	if err := sqlDB.Ping(); err != nil {
+	if err = sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("error pinging database: %w", err)
 	}
 

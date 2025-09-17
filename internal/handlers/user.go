@@ -21,7 +21,7 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 
 	user, err := h.userService.GetProfile(userID)
 	if err != nil {
-		return c.Status(404).JSON(dto.ErrorResponse{Error: "User not found"})
+		return c.Status(fiber.StatusNotFound).JSON(dto.ErrorResponse{Error: "User not found"})
 	}
 
 	response := dto.UserToResponse(user)
@@ -33,13 +33,13 @@ func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
 
 	var req dto.UpdateProfileRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	modelReq := dto.UpdateProfileRequestToModel(&req)
 	err := h.userService.UpdateProfile(userID, modelReq)
 	if err != nil {
-		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to update profile"})
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: "Failed to update profile"})
 	}
 
 	response := dto.UpdateProfileResponse{Message: "Profile updated successfully"}
@@ -51,7 +51,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 
 	err := h.userService.DeleteUser(userID)
 	if err != nil {
-		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to delete user"})
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: "Failed to delete user"})
 	}
 
 	response := dto.SuccessResponse{Message: "User deleted successfully"}
@@ -61,7 +61,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 	users, err := h.userService.GetAllUsers()
 	if err != nil {
-		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to get users"})
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.ErrorResponse{Error: "Failed to get users"})
 	}
 
 	response := dto.UsersToListResponse(users)
