@@ -3,7 +3,7 @@ services:
     image: postgres:17-alpine
     container_name: devpre_postgres
     environment:
-      POSTGRES_DB: devpre_db
+      POSTGRES_DB: devprep_db
       POSTGRES_USER: devprep_postgres
       POSTGRES_PASSWORD: password
     ports:

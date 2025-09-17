@@ -1,0 +1,57 @@
+package handlers
+
+import (
+	"github.com/AtlasOpx/devprep/internal/dto"
+	userServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
+
+type UserHandler struct {
+	userService userServiceInterface.UserService
+}
+
+func NewUserHandler(userService userServiceInterface.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
+}
+
+func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uuid.UUID)
+
+	user, err := h.userService.GetProfile(userID)
+	if err != nil {
+		return c.Status(404).JSON(dto.ErrorResponse{Error: "User not found"})
+	}
+
+	response := dto.UserToProfileResponse(user)
+	return c.JSON(response)
+}
+
+func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uuid.UUID)
+
+	var req dto.UpdateProfileRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	modelReq := dto.UpdateProfileRequestToModel(&req)
+	err := h.userService.UpdateProfile(userID, modelReq)
+	if err != nil {
+		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to update profile"})
+	}
+
+	response := dto.UpdateProfileResponse{Message: "Profile updated successfully"}
+	return c.JSON(response)
+}
+
+func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
+	users, err := h.userService.GetAllUsers()
+	if err != nil {
+		return c.Status(500).JSON(dto.ErrorResponse{Error: "Failed to get users"})
+	}
+
+	response := dto.UsersToListResponse(users)
+	return c.JSON(response)
+}

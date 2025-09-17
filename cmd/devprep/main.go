@@ -2,6 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/AtlasOpx/devprep/internal/config"
+	"github.com/AtlasOpx/devprep/internal/database"
+	"github.com/AtlasOpx/devprep/internal/routes"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 	"os"
 	"os/signal"
@@ -27,6 +32,22 @@ func main() {
 	ongoingCtx, stopOngoingGracefully := context.WithCancel(context.Background())
 	defer stopOngoingGracefully()
 
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(db *database.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(db)
+
 	app := fiber.New(fiber.Config{
 		Prefork:       false,
 		CaseSensitive: true,
@@ -37,6 +58,12 @@ func main() {
 		WriteTimeout:  30 * time.Second,
 		IdleTimeout:   120 * time.Second,
 	})
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+	}))
 
 	app.Use(func(c *fiber.Ctx) error {
 		if isShuttingDown.Load() {
@@ -77,9 +104,11 @@ func main() {
 		}
 	})
 
+	routes.SetupRoutes(app, db, cfg)
+
 	go func() {
 		log.Println("Server starting on :3000")
-		if err := app.Listen(":3000"); err != nil {
+		if err := app.Listen(fmt.Sprintf(":%v", cfg.ServerPort)); err != nil {
 			log.Printf("Server failed to start: %v", err)
 			stop()
 		}
