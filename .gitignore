@@ -27,6 +27,8 @@ build/
 dist/
 coverage/
 
+*.html
+
 # Go modules / vendor (если не используешь — игнорь)
 vendor/
 pkg/
