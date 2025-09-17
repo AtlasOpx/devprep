@@ -73,10 +73,11 @@ func (suite *AuthFlowTestSuite) TearDownTest() {
 	suite.cleanupDatabase()
 }
 
+// TODO(): ПОхУй
 func (suite *AuthFlowTestSuite) cleanupDatabase() {
 	if suite.db != nil {
-		suite.db.DB.Exec("DELETE FROM sessions")
-		suite.db.DB.Exec("DELETE FROM users")
+		_, _ = suite.db.DB.Exec("DELETE FROM sessions")
+		_, _ = suite.db.DB.Exec("DELETE FROM users")
 	}
 }
 
@@ -98,7 +99,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusCreated, resp.StatusCode)
 
 	var registerResponse dto.RegisterResponse
-	json.NewDecoder(resp.Body).Decode(&registerResponse)
+	err = json.NewDecoder(resp.Body).Decode(&registerResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "User created successfully", registerResponse.Message)
 	assert.NotEmpty(suite.T(), registerResponse.UserID)
 
@@ -116,7 +120,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusOK, loginResp.StatusCode)
 
 	var loginResponse dto.LoginResponse
-	json.NewDecoder(loginResp.Body).Decode(&loginResponse)
+	err = json.NewDecoder(loginResp.Body).Decode(&loginResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "Login successful", loginResponse.Message)
 	assert.Equal(suite.T(), registerReq.Email, loginResponse.User.Email)
 	assert.Equal(suite.T(), registerReq.Username, loginResponse.User.Username)
@@ -135,7 +142,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusOK, profileResp.StatusCode)
 
 	var profileResponse dto.UserResponse
-	json.NewDecoder(profileResp.Body).Decode(&profileResponse)
+	err = json.NewDecoder(profileResp.Body).Decode(&profileResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), registerReq.Email, profileResponse.Email)
 	assert.Equal(suite.T(), registerReq.Username, profileResponse.Username)
 	assert.Equal(suite.T(), registerReq.FirstName, profileResponse.FirstName)
@@ -157,7 +167,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusOK, updateResp.StatusCode)
 
 	var updateResponse dto.UpdateProfileResponse
-	json.NewDecoder(updateResp.Body).Decode(&updateResponse)
+	err = json.NewDecoder(updateResp.Body).Decode(&updateResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "Profile updated successfully", updateResponse.Message)
 
 	verifyReq := httptest.NewRequest(http.MethodGet, "/api/v1/users/profile", nil)
@@ -168,7 +181,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusOK, verifyResp.StatusCode)
 
 	var verifyResponse dto.UserResponse
-	json.NewDecoder(verifyResp.Body).Decode(&verifyResponse)
+	err = json.NewDecoder(verifyResp.Body).Decode(&verifyResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), updateReq.FirstName, verifyResponse.FirstName)
 	assert.Equal(suite.T(), updateReq.LastName, verifyResponse.LastName)
 	assert.Equal(suite.T(), updateReq.Username, verifyResponse.Username)
@@ -181,7 +197,10 @@ func (suite *AuthFlowTestSuite) TestCompleteUserRegistrationAndLoginFlow() {
 	assert.Equal(suite.T(), http.StatusOK, logoutResp.StatusCode)
 
 	var logoutResponse dto.LogoutResponse
-	json.NewDecoder(logoutResp.Body).Decode(&logoutResponse)
+	err = json.NewDecoder(logoutResp.Body).Decode(&logoutResponse)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "Logout successful", logoutResponse.Message)
 
 	unauthorizedReq := httptest.NewRequest(http.MethodGet, "/api/v1/users/profile", nil)
@@ -250,7 +269,10 @@ func (suite *AuthFlowTestSuite) TestMultipleUsersRegistrationAndListUsers() {
 	assert.Equal(suite.T(), http.StatusOK, listResp.StatusCode)
 
 	var usersResponse dto.UsersListResponse
-	json.NewDecoder(listResp.Body).Decode(&usersResponse)
+	err = json.NewDecoder(listResp.Body).Decode(&usersResponse)
+	if err != nil {
+		return
+	}
 	assert.Len(suite.T(), usersResponse.Users, 3)
 
 	emails := make(map[string]bool)

@@ -40,8 +40,8 @@ func TestCheckPasswordHash_Invalid(t *testing.T) {
 }
 
 func TestGenerateSessionToken(t *testing.T) {
-	token1 := utils.GenerateSessionToken()
-	token2 := utils.GenerateSessionToken()
+	token1, _ := utils.GenerateSessionToken()
+	token2, _ := utils.GenerateSessionToken()
 
 	assert.NotEmpty(t, token1)
 	assert.NotEmpty(t, token2)
@@ -55,7 +55,7 @@ func TestGenerateSessionToken_Uniqueness(t *testing.T) {
 	iterations := 1000
 
 	for i := 0; i < iterations; i++ {
-		token := utils.GenerateSessionToken()
+		token, _ := utils.GenerateSessionToken()
 		assert.False(t, tokens[token], "Generated duplicate token: %s", token)
 		tokens[token] = true
 	}

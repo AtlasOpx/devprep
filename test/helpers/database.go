@@ -54,7 +54,10 @@ func SetupTestDatabase() (*TestDatabase, error) {
 
 	log.Println("Connecting to database on url: ", databaseURL)
 
-	resource.Expire(120)
+	err = resource.Expire(120)
+	if err != nil {
+		return nil, fmt.Errorf("could not set up database: %w", err)
+	}
 
 	pool.MaxWait = 120 * time.Second
 	var db *sql.DB

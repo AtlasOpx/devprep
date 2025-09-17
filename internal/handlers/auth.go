@@ -57,7 +57,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(401).JSON(dto.ErrorResponse{Error: "Invalid credentials"})
 	}
 
-	sessionToken := utils.GenerateSessionToken()
+	sessionToken, _ := utils.GenerateSessionToken()
 	expiresAt := time.Now().Add(time.Hour * 24)
 
 	err = h.authRepo.CreateSession(response.User.ID, sessionToken, expiresAt, c.Get("User-Agent"), c.IP())

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/AtlasOpx/devprep/internal/models"
 	authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
 	"time"
@@ -28,7 +29,10 @@ func (m *AuthMiddleware) RequireAuth(c *fiber.Ctx) error {
 	}
 
 	if session.ExpiresAt.Before(time.Now()) {
-		m.authRepo.DeleteSession(sessionToken)
+		err := m.authRepo.DeleteSession(sessionToken)
+		if err != nil {
+			return fmt.Errorf("couldn't delete the session: %w", err)
+		}
 		return c.Status(401).JSON(fiber.Map{"error": "Session expired"})
 	}
 

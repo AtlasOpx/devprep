@@ -3,10 +3,14 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 )
 
-func GenerateSessionToken() string {
+func GenerateSessionToken() (string, error) {
 	bytes := make([]byte, 32)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", fmt.Errorf("error generating session token: %w", err)
+	}
+	return hex.EncodeToString(bytes), nil
 }

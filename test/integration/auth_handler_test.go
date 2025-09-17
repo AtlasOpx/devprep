@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -68,8 +69,13 @@ func (suite *AuthHandlerTestSuite) TearDownTest() {
 
 func (suite *AuthHandlerTestSuite) cleanupDatabase() {
 	if suite.db != nil {
-		suite.db.DB.Exec("DELETE FROM sessions")
-		suite.db.DB.Exec("DELETE FROM users")
+		if _, err := suite.db.DB.Exec("DELETE FROM sessions"); err != nil {
+			suite.T().Logf("Failed to delete sessions: %v", err)
+		}
+
+		if _, err := suite.db.DB.Exec("DELETE FROM users"); err != nil {
+			suite.T().Logf("Failed to delete users: %v", err)
+		}
 	}
 }
 
@@ -100,7 +106,10 @@ func (suite *AuthHandlerTestSuite) TestRegister_Success() {
 	assert.Equal(suite.T(), http.StatusCreated, resp.StatusCode)
 
 	var response dto.RegisterResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		log.Errorf("Failed to decode response: %v", err)
+	}
 	assert.Equal(suite.T(), "User created successfully", response.Message)
 	assert.NotEmpty(suite.T(), response.UserID)
 }
@@ -162,7 +171,10 @@ func (suite *AuthHandlerTestSuite) TestLogin_Success() {
 	regBody, _ := json.Marshal(registerReq)
 	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(regBody))
 	regReq.Header.Set("Content-Type", "application/json")
-	suite.app.Test(regReq)
+	_, err := suite.app.Test(regReq)
+	if err != nil {
+		return
+	}
 
 	loginReq := dto.LoginRequest{
 		Email:    "test@example.com",
@@ -178,7 +190,10 @@ func (suite *AuthHandlerTestSuite) TestLogin_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.LoginResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		log.Errorf("%v", err)
+	}
 	assert.Equal(suite.T(), "Login successful", response.Message)
 	assert.NotEmpty(suite.T(), response.User.ID)
 
@@ -213,7 +228,10 @@ func (suite *AuthHandlerTestSuite) TestLogin_WrongPassword() {
 	regBody, _ := json.Marshal(registerReq)
 	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(regBody))
 	regReq.Header.Set("Content-Type", "application/json")
-	suite.app.Test(regReq)
+	_, err := suite.app.Test(regReq)
+	if err != nil {
+		return
+	}
 
 	loginReq := dto.LoginRequest{
 		Email:    "test@example.com",
@@ -241,7 +259,10 @@ func (suite *AuthHandlerTestSuite) TestLogout_Success() {
 	regBody, _ := json.Marshal(registerReq)
 	regReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(regBody))
 	regReq.Header.Set("Content-Type", "application/json")
-	suite.app.Test(regReq)
+	_, err := suite.app.Test(regReq)
+	if err != nil {
+		return
+	}
 
 	loginReq := dto.LoginRequest{
 		Email:    "test@example.com",
@@ -263,7 +284,10 @@ func (suite *AuthHandlerTestSuite) TestLogout_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.LogoutResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "Logout successful", response.Message)
 }
 

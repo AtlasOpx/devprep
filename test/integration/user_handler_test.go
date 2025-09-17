@@ -73,8 +73,8 @@ func (suite *UserHandlerTestSuite) TearDownTest() {
 
 func (suite *UserHandlerTestSuite) cleanupDatabase() {
 	if suite.db != nil {
-		suite.db.DB.Exec("DELETE FROM sessions")
-		suite.db.DB.Exec("DELETE FROM users")
+		_, _ = suite.db.DB.Exec("DELETE FROM sessions")
+		_, _ = suite.db.DB.Exec("DELETE FROM users")
 	}
 }
 
@@ -110,7 +110,10 @@ func (suite *UserHandlerTestSuite) createUserAndLogin() (string, uuid.UUID) {
 	regResp, _ := suite.app.Test(regReq)
 
 	var regResponse dto.RegisterResponse
-	json.NewDecoder(regResp.Body).Decode(&regResponse)
+	err := json.NewDecoder(regResp.Body).Decode(&regResponse)
+	if err != nil {
+		return "", [16]byte{}
+	}
 
 	loginReq := dto.LoginRequest{
 		Email:    "test@example.com",
@@ -138,7 +141,10 @@ func (suite *UserHandlerTestSuite) TestGetProfile_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.UserResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), userID, response.ID)
 	assert.Equal(suite.T(), "test@example.com", response.Email)
 	assert.Equal(suite.T(), "testuser", response.Username)
@@ -171,7 +177,10 @@ func (suite *UserHandlerTestSuite) TestUpdateProfile_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.UpdateProfileResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "Profile updated successfully", response.Message)
 }
 
@@ -201,7 +210,10 @@ func (suite *UserHandlerTestSuite) TestDeleteUser_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.SuccessResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 	assert.Equal(suite.T(), "User deleted successfully", response.Message)
 }
 
@@ -219,7 +231,10 @@ func (suite *UserHandlerTestSuite) TestGetAllUsers_Success() {
 	regBody2, _ := json.Marshal(registerReq2)
 	regReq2 := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(regBody2))
 	regReq2.Header.Set("Content-Type", "application/json")
-	suite.app.Test(regReq2)
+	_, err := suite.app.Test(regReq2)
+	if err != nil {
+		return
+	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/users/", nil)
 	req.Header.Set("Cookie", "session_token="+sessionToken)
@@ -229,7 +244,10 @@ func (suite *UserHandlerTestSuite) TestGetAllUsers_Success() {
 	assert.Equal(suite.T(), http.StatusOK, resp.StatusCode)
 
 	var response dto.UsersListResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 	assert.Len(suite.T(), response.Users, 2)
 }
 
