@@ -1,4 +1,6 @@
-.PHONY: build run dev test clean migrate-up migrate-down migrate-create migrate-force migrate-version migrate-install docker-up docker-down
+.PHONY: build run dev test test-unit test-integration test-e2e test-all test-coverage clean
+.PHONY: migrate-up migrate-down migrate-create migrate-force migrate-version migrate-install
+.PHONY: docker-up docker-down fmt vet lint deps
 
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -11,6 +13,7 @@ BINARY_NAME=devprep
 MAIN_PATH=./cmd/devprep/main.go
 
 DB_URL=postgres://devprep_postgres:password@localhost:5432/devprep_db?sslmode=disable
+TEST_DB_URL=postgres://postgres:password@localhost:5432/devprep_test?sslmode=disable
 
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -v $(MAIN_PATH)
@@ -18,8 +21,44 @@ build:
 run: build
 	./$(BINARY_NAME)
 
+dev:
+	$(GOCMD) run $(MAIN_PATH)
+
 test:
-	$(GOTEST) ./...
+	$(GOTEST) -v -race ./...
+
+test-unit:
+	@echo "Running unit tests..."
+	$(GOTEST) -v -race -short ./test/unit/...
+
+test-integration:
+	@echo "Running integration tests..."
+	$(GOTEST) -v -race ./test/integration/...
+
+test-e2e:
+	@echo "Running E2E tests..."
+	$(GOTEST) -v -race ./test/e2e/...
+
+test-all: test-unit test-integration test-e2e
+
+test-coverage:
+	@echo "Running tests with coverage..."
+	$(GOTEST) -v -race -coverprofile=coverage.out ./...
+	$(GOCMD) tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+fmt:
+	$(GOCMD) fmt ./...
+
+vet:
+	$(GOCMD) vet ./...
+
+lint:
+	golangci-lint run
+
+deps:
+	$(GOMOD) tidy
+	$(GOMOD) verify
 
 clean:
 	$(GOCLEAN)

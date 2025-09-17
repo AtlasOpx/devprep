@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+          POSTGRES_DB: devprep_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        go-version: ['1.24.5']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: make test-unit
+      env:
+        TEST_DB_URL: postgres://testuser:testpassword@localhost:5432/devprep_test?sslmode=disable
+
+    - name: Run integration tests
+      run: make test-integration
+      env:
+        TEST_DB_URL: postgres://testuser:testpassword@localhost:5432/devprep_test?sslmode=disable
+
+    - name: Run E2E tests
+      run: make test-e2e
+      env:
+        TEST_DB_URL: postgres://testuser:testpassword@localhost:5432/devprep_test?sslmode=disable
+
+    - name: Generate test coverage
+      run: make test-coverage
+      env:
+        TEST_DB_URL: postgres://testuser:testpassword@localhost:5432/devprep_test?sslmode=disable
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.out
+        flags: unittests
+        name: codecov-umbrella
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.5'
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.5'
+
+    - name: Build
+      run: make build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: devprep-binary
+        path: ./devprep
