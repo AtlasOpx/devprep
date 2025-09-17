@@ -24,13 +24,6 @@ func SetupRoutes(app *fiber.App, db *database.DB, cfg *config.Config) {
 
 	api := app.Group("/api/v1")
 
-	api.Get("/health", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"message": "API is running",
-		})
-	})
-
 	SetupAuthRoutes(api, authHandler, authMiddleware)
 	SetupUserRoutes(api, userHandler, authMiddleware)
 	SetupAdminRoutes(api, userHandler, authMiddleware)
