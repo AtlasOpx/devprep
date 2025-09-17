@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: devpre_postgres
+    container_name: devprep_postgres
     environment:
       POSTGRES_DB: devprep_db
       POSTGRES_USER: devprep_postgres
