@@ -2,15 +2,15 @@ package service
 
 import (
 	"github.com/AtlasOpx/devprep/internal/models"
-	"github.com/AtlasOpx/devprep/internal/repository/interfaces"
+	"github.com/AtlasOpx/devprep/internal/repository"
 	"github.com/google/uuid"
 )
 
 type UserService struct {
-	userRepo interfaces.UserRepository
+	userRepo *repository.UserRepository
 }
 
-func NewUserService(userRepo interfaces.UserRepository) *UserService {
+func NewUserService(userRepo *repository.UserRepository) *UserService {
 	return &UserService{
 		userRepo: userRepo,
 	}

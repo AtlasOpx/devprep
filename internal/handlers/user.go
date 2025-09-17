@@ -2,17 +2,17 @@ package handlers
 
 import (
 	"github.com/AtlasOpx/devprep/internal/dto"
-	userServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+	"github.com/AtlasOpx/devprep/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	userService userServiceInterface.UserService
+	userService *service.UserService
 }
 
-func NewUserHandler(userService userServiceInterface.UserService) *UserHandler {
+func NewUserHandler(userService *service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 

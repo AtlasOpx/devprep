@@ -3,7 +3,6 @@ package repository
 import (
 	"github.com/AtlasOpx/devprep/internal/database"
 	"github.com/AtlasOpx/devprep/internal/models"
-	"github.com/AtlasOpx/devprep/internal/repository/interfaces"
 	"github.com/google/uuid"
 )
 
@@ -11,7 +10,7 @@ type UserRepository struct {
 	db *database.DB
 }
 
-func NewUserRepository(db *database.DB) interfaces.UserRepository {
+func NewUserRepository(db *database.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 

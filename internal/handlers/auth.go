@@ -3,8 +3,8 @@ package handlers
 import (
 	"github.com/AtlasOpx/devprep/internal/config"
 	"github.com/AtlasOpx/devprep/internal/dto"
-	authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
-	authServiceInterface "github.com/AtlasOpx/devprep/internal/service/interfaces"
+	"github.com/AtlasOpx/devprep/internal/repository"
+	"github.com/AtlasOpx/devprep/internal/service"
 	"github.com/AtlasOpx/devprep/internal/utils"
 	"time"
 
@@ -12,12 +12,12 @@ import (
 )
 
 type AuthHandler struct {
-	authService authServiceInterface.AuthService
-	authRepo    authRepoInterface.AuthRepository
+	authService *service.AuthService
+	authRepo    *repository.AuthRepository
 	cfg         *config.Config
 }
 
-func NewAuthHandler(authService authServiceInterface.AuthService, authRepo authRepoInterface.AuthRepository, cfg *config.Config) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService, authRepo *repository.AuthRepository, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		authRepo:    authRepo,

@@ -3,17 +3,17 @@ package middleware
 import (
 	"fmt"
 	"github.com/AtlasOpx/devprep/internal/models"
-	authRepoInterface "github.com/AtlasOpx/devprep/internal/repository/interfaces"
+	"github.com/AtlasOpx/devprep/internal/repository"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type AuthMiddleware struct {
-	authRepo authRepoInterface.AuthRepository
+	authRepo *repository.AuthRepository
 }
 
-func NewAuthMiddleware(authRepo authRepoInterface.AuthRepository) *AuthMiddleware {
+func NewAuthMiddleware(authRepo *repository.AuthRepository) *AuthMiddleware {
 	return &AuthMiddleware{authRepo: authRepo}
 }
 

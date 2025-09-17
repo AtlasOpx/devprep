@@ -3,7 +3,6 @@ package repository
 import (
 	"github.com/AtlasOpx/devprep/internal/database"
 	"github.com/AtlasOpx/devprep/internal/models"
-	"github.com/AtlasOpx/devprep/internal/repository/interfaces"
 	"github.com/google/uuid"
 	"time"
 )
@@ -12,7 +11,7 @@ type AuthRepository struct {
 	db *database.DB
 }
 
-func NewAuthRepository(db *database.DB) interfaces.AuthRepository {
+func NewAuthRepository(db *database.DB) *AuthRepository {
 	return &AuthRepository{db: db}
 }
 
