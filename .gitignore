@@ -27,6 +27,11 @@ build/
 dist/
 coverage/
 
+devprep
+
+coverage.out
+coverage.html
+
 *.html
 
 # Go modules / vendor (если не используешь — игнорь)
